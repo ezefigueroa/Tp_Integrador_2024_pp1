@@ -1,4 +1,4 @@
-//const bcrypt = require("bcrypt");
+const bcrypt = require("bcrypt");
 
 
 const Usuario = (sequelize, Sequelize) => {
@@ -26,7 +26,7 @@ const Usuario = (sequelize, Sequelize) => {
             allowNull: true,
         },
     }, {
-        timestamps: true,
+        timestamps: false,
         hooks: {
             beforeCreate: async(Usuario) => {
                 if (Usuario.password) {

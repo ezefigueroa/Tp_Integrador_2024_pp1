@@ -1,14 +1,14 @@
 const express = require ("express");
 const bodyParser = require ("body-parser");
 const PORT = 3000
-const personasRouter= require ("./routes/personasRoutes");
+const UsuarioRouter= require ("./routes/usuarioRoutes");
 
 
 
 const app = express();
 
 app.use(bodyParser.json());
-app.use("/api/personas", personasRouter)
+app.use("/api/usuarios", UsuarioRouter)
 
 app.listen (PORT, ()=> {
     console.log(`aplicacion corriendo en puerto ${PORT}`)
