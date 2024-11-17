@@ -6,6 +6,7 @@ const jwt = require('jsonwebtoken');
 
 const register = async(req, res) => {
     const { nombre, mail, nickname, password } = req.body;
+    console.log(req.body);
     if (!nombre || !mail || !nickname || !password) {
         return res.status(400).send({ message: "Faltan datos de completar" });
     }
@@ -32,7 +33,7 @@ const update = async(req, res) => {
         if (req.file) {
             avatarPath = `uploads/avatars/${req.file.filename}`
         }
-        //console.log(avatarPath)
+        
 
         // Buscar el usuario por id
         const usuario = await Usuario.findByPk(id);
@@ -112,7 +113,7 @@ const login = async(req, res) => {
             id: usuario.id,
             nombre: usuario.nombre,
             mail: usuario.mail
-        }, process.env.JWT_SECRET, { expiresIn: 180 });
+        }, process.env.JWT_SECRET, { expiresIn: 600 });
         res.status(200).send({ token });
     } catch (error) {
         res.status(500).send({

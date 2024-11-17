@@ -7,10 +7,10 @@ const auth = require("../middlewares/authmiddleware");
 
 router.post("/createPost",auth, postController.createPost);
 router.get("/listPost",auth, postController.listPost);
-router.put("/edit/:id",auth,postController.editPost);
-router.delete("/delete/:id",auth, postController.deletePost);
+router.put("/editPost/:id",auth,postController.editPost);
+router.delete("/deletePost/:id",auth, postController.deletePost);
 router.get("/viewPost/:id",auth, postController.viewPost);
-/*router.get("/user-posts/:id",auth , postController.userPost);*/
+router.get("/userpost/:id",auth , postController.userPost);
 
 
 

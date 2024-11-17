@@ -10,9 +10,9 @@ const createPost = async (req,res)=>{
     }
     try{
         const post = await Post.create({id_usuario, titulo, contenido});
-        res.status(201).send(post);
+        return res.status(201).send(post);
     } catch (error) {
-        res.status(500).send({
+        return res.status(500).send({
         message: error.message,
         nombre: error.name
         });
@@ -34,11 +34,14 @@ const listPost = async(req, res) => {
         const offset = (page - 1) * limit;
 
         const { count, rows } = await Post.findAndCountAll({
+            where: {
+                id_usuario: req.user.id  
+            },
             limit: limit,
             offset: offset
         });
 
-        res.status(200).send({
+        return res.status(200).send({
             totalItems: count,
             totalPages: Math.ceil(count / limit),
             currentPage: page,
@@ -47,43 +50,80 @@ const listPost = async(req, res) => {
         })
 
     } catch (error) {
-        res.status(500).send(error.message);
+        return res.status(500).send(error.message);
     }
 }
 
 
-const editPost = async(req, res) => {
+const editPost = async (req, res) => {
+    const userId = req.user.id;
+    const postId = req.params.id;
+    
     try {
-        const post = await Post.update(req.body, {
-            where: { id: req.params.id }
-        })
-        if (post[0]) {
-            const postUpdated = await Post.findByPk(req.params.id);
-            res.status(200).send({
-                message: "Actualizado",
-                post: postUpdated
+        const post = await Post.findByPk(postId);
+        
+        if (!post) {
+            return res.status(404).send({ message: "No se encontró el post." });
+        }
+
+        
+        if (post.id_usuario === userId) {
+
+            
+            const update = await Post.update(req.body, {
+                where: { id: postId }
             });
+
+            
+            if (update[0]) {
+                const postUpdated = await Post.findByPk(postId);
+                res.status(200).send({
+                    message: "Post actualizado correctamente.",
+                    post: postUpdated
+                });
+            } else {
+                res.status(404).send({ message: "No se pudo actualizar el post." });
+            }
         } else {
-            res.status(404).send({ message: "Not found" });
+            return res.status(403).send({ message: "Solo el creador puede modificar el post." });
         }
     } catch (error) {
-        res.status(500).send({ message: "Error interno del servidor" });
+        res.status(500).send({ message: "Error interno del servidor." });
     }
-}
+};
+
+        
+        
+     
+
+
+
+
+
 
 
 const deletePost = async (req,res)=>{
+    const userId = req.user.id;
+    const postId = req.params.id;
     try{
-        const post = await Post.destroy({
-            where:{id: req.params.id}
+        const post = await Post.findByPk(postId);
+        if (!post){
+            return res.status(404).send({message:"Post no existe"})
+        };
+        if (post.id_usuario !== userId){
+            return res.status(403).send({message:"No tienes permisos para eliminar el post"})
+        };
+
+        const postDelete = await Post.destroy({
+            where:{id: postId}
         });
-        if (post){
-            res.status(200).send({message: "eliminado"});
+        if (postDelete > 0){
+            return res.status(200).send({message: "eliminado"});
         
         }else {
-            res.status(404).send({message:"Not found"})};
+            return res.status(404).send({message:"Not found"})};
     }catch(error){
-        res.status(500).send({message:"Error interno del servidor"});
+        return res.status(500).send({message:"Error interno del servidor"});
     }     
     
 
@@ -91,8 +131,10 @@ const deletePost = async (req,res)=>{
 
 
 const viewPost = async(req, res) => {
+    
+    const postId = req.params.id;
     try {
-        const post = await Post.findByPk(req.params.id);
+        const post = await Post.findByPk(postId);
 
         if (!post) {
             return res.status(404).send({ message: "Post no encontrado" });
@@ -103,8 +145,8 @@ const viewPost = async(req, res) => {
         }
         const isFollower = await Following.findOne({
             where: {
-                id_usuario: post.id_usuario, 
-                id_usuario_seguido: req.user.id       
+                id_usuario: req.user.id ,
+                id_usuario_seguido:post.id_usuario,    
             }
         });
         if (isFollower) {
@@ -112,7 +154,7 @@ const viewPost = async(req, res) => {
             return res.status(200).send(post);
         } else {
             
-            return res.status(404).send({ message: "Not found" });
+            return res.status(404).send({ message: "Solo pueden verlo mis seguidores" });
         }
     } catch (error) {
         res.status(500).send({ message: "Error interno del servidor" });
@@ -124,6 +166,36 @@ const viewPost = async(req, res) => {
 
 
 
+const userPost = async (req,res)=>{
+    
+    const userId= req.params.id;
+    try{
+        
+        const isFollower= await Following.findOne({
+            where:{
+                id_usuario: req.user.id,
+                id_usuario_seguido: userId
+            }
+        });
+        if (!isFollower){
+            return res.status(403).send({message:"Post solo para seguidores."})
+
+        };   
+        const post = await Post.findAll({where:{
+            id_usuario:userId}});
+
+        if (post.length === 0){
+            return res.status(404).send({message:"No hay post que mostrar."})
+
+        };
+        return res.status(200).send(post);
+
+   } catch(error){
+    return res.status(500).send({message:"error interno del servidor"})
+   };
+
+};    
+   
 
 
 
@@ -132,4 +204,8 @@ const viewPost = async(req, res) => {
 
 
 
-module.exports = { createPost, listPost, editPost, deletePost, viewPost};
+
+
+
+
+module.exports = { createPost, listPost, editPost, deletePost, viewPost, userPost};
