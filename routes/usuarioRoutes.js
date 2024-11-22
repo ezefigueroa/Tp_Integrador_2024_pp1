@@ -112,6 +112,66 @@ router.post("/register", usuarioController.register);
 router.get("/list", usuarioController.list);
 
 
+/**
+ * @swagger
+ * /usuarios/login:
+ *   post:
+ *     tags: [Usuarios]
+ *     summary: Authenticate user and generate JWT token
+ *     description: Permite a un usuario autenticarse enviando datos en formato `application/x-www-form-urlencoded`. Devuelve un token JWT si las credenciales son correctas.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/x-www-form-urlencoded:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               mail:
+ *                 type: string
+ *                 format: email
+ *                 description: El correo electrónico del usuario.
+ *                 example: user@example.com
+ *               password:
+ *                 type: string
+ *                 format: password
+ *                 description: La contraseña del usuario.
+ *                 example: password123
+ *     responses:
+ *       200:
+ *         description: Login exitoso, devuelve un token JWT.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 token:
+ *                   type: string
+ *                   description: Token JWT generado para autenticación.
+ *                   example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+ *       400:
+ *         description: Credenciales inválidas o solicitud malformada.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: Mensaje de error.
+ *                   example: "Password incorrecto"
+ *       500:
+ *         description: Error interno del servidor.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: Mensaje de error general.
+ *                   example: "Error en el servidor"
+ */
+
 
 
 router.post("/login", usuarioController.login);
